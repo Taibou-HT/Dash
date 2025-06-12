@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+      n
+    <section id="menu">
+        <div class="logo">
+            <img src="My log.png" alt="">
+            <h2> Barry's</h2>
+        </div>
+        <div class="items">
+            <li><i class="fas fa-laptop"></i><a href="#">Dashboard</a></li>
+             <li><i class="fas fa-ellipsis-v"></i><a href="elements.html">Elements</a></li>
+              <li><i class="fas fa-th-large"></i><a href="#">Tabels</a></li>
+               
+        </div>
+
+    </section>
+    <section id="interface"> 
+        <div class="navigation">
+            <div class="n1">
+                <div>
+                    <i id="menu-btn" class="fas fa-bars"></i>
+                </div>
+             <div class="search">
+              <i class=" fas fa-search"></i>
+
+               <input type="text" id="search" placeholder="Search">
+             </div>
+            </div>
+
+            <div class="profil">
+                <i class="far fa-bell"></i>
+                <img src="profile.jpg" alt="">
+            </div>
+           
+        </div>
+        <h3 class="i-name">
+            Dashboard
+        </h3>
+        <div class="values">
+            <div class="val-box">
+                <i class="far fa-user"></i>
+                <div>
+                    <h3>2000</h3>
+                    <span>New Users</span>
+                </div>
+            </div>
+              <div class="val-box">
+                <i class="fas fa-shopping-cart"></i>
+                <div>
+                    <h3>8.567</h3>
+                    <span>Total Orders</span>
+                </div>
+            </div>
+              <div class="val-box">
+                <i class="far fa-credit-card"></i>
+                <div>
+                    <h3>500.000</h3>
+                    <span>Products Sell</span>
+                </div>
+            </div>
+              <div class="val-box">
+                <i class="far fa-dollar-sign"></i>
+                <div>
+                    <h3>$45.800</h3>
+                    <span>This month</span>
+                </div>
+            </div>
+        </div>
+       k
+         <div class="controls">
+    <button id="theme-toggle" class="fas fa-moon"></button>
+    <button id="add-user">Ajouter une personne</button>
+  </div>
+        <div class="board">
+   <table>
+    <thead>
+      <tr>
+        <th class="sortable">Nom</th>
+        <th>Poste</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody class="user-table-body" id="user-table"></tbody>
+  </table>
+
+  <div id="pagination"></div>
+
+  <script>
+   const users = JSON.parse(localStorage.getItem('users')) || [
+  { img: "profile.jpg", name: "Mariame", role: "Comptable", status: "Actif" },
+  { img: "1.jpeg", name: "Ines", role: "Auditrice Interne", status: "Actif" },
+  { img: "3.jpeg", name: "Fatou", role: "RH", status: "congés" },
+  { img: "6.jpeg", name: "Ousmane", role: "Logisticien", status: "Actif" },
+  { img: "7.jpeg", name: "Aissatou", role: "Manager", status: "Actif" },
+  { img: "8.jpeg", name: "Taibou", role: "Admin", status: "Actif" }
+];
+
+    function renderTable() {
+      const tbody = document.getElementById('user-table');
+      tbody.innerHTML = "";
+      users.forEach((user, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${user.img}" alt=""> <span contenteditable="true">${user.name}</span></td>
+          <td contenteditable="true">${user.role}</td>
+          <td contenteditable="true">${user.status}</td>
+          <td>
+            <span class="edit-btn">✏️</span>
+            <span class="delete-btn" onclick="deleteUser(${index})">❌</span>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function deleteUser(index) {
+      users.splice(index, 1);
+      saveUsers();
+      renderTable();
+    }
+    function saveUsers(){
+      localStorage.setItem('users', JSON.stringify(users))
+     }
+
+    document.getElementById('add-user').addEventListener('click', () => {
+      users.push({ img: "profile.jpg", name: "Nouvel utilisateur", role: "Poste", status: "Actif" });
+      saveUsers();
+      renderTable();
+    });
+
+    renderTable();
+     // THÈME SOMBRE
+    const toggleBtn = document.getElementById('theme-toggle');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('theme', theme);
+  });
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+     // RECHERCHE
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('input', () => {
+      const searchValue = searchInput.value.toLowerCase();
+      const rows = document.querySelectorAll('#user-table tr');
+      rows.forEach(row => {
+        const name = row.children[0].textContent.toLowerCase();
+        row.style.display = name.includes(searchValue) ? '' : 'none';
+      });
+    });
+// TRI
+    document.querySelector('.board').addEventListener('click', () => {
+      const tbody = document.getElementById('user-table');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => a.children[0].textContent.localeCompare(b.children[0].textContent));
+      rows.forEach(row => tbody.appendChild(row));
+      showPage(1);
+    });
+
+    //PAGINATION
+    const perPage = 10;
+    let currentPage = 1;
+
+    function showPage(page) {
+      const rows = document.querySelectorAll('#user-table tr');
+      const total = rows.length;
+      const start = (page - 1) * perPage;
+      const end = start + perPage;
+
+      rows.forEach((row, index) => {
+        row.style.display = index >= start && index < end ? '' : 'none';
+      });
+
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      const totalPages = Math.ceil(total / perPage);
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        if (i === page) btn.disabled = true;
+    btn.addEventListener('click', () => showPage(i));
+        pagination.appendChild(btn);
+      }
+
+      currentPage = page;
+    }
+
+    showPage(1);
+    
+ // AJOUTER UTILISATEUR
+    document.getElementById('add-user').addEventListener('click', () => {
+      const tbody = document.getElementById('user-table');
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td><img src="profile.jpg" alt=""> Nouvel utilisateur</td>
+        <td>Poste</td>
+        <td>Actif</td>
+        <td><a href="#">Edit</a></td>
+      `;
+      tbody.appendChild(newRow);
+      showPage(currentPage);
+    });
+  
+
+  </script>
+
+              <div id="pagination"></div>
+        </div>
+       
+    </section>
+    <script>
+         
+    </script>
+   
+
+</body>
+
+</html>
